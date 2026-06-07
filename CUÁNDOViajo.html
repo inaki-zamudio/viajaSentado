@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CUÁNDOViajo — Subte Buenos Aires</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: #2a2a3a;
+    --text: #f0f0f5;
+    --muted: #6b6b80;
+    --accent: #00e5a0;
+    --accent2: #7c6dfa;
+    --warn: #f5c518;
+    --danger: #ff4d6d;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); }
+
+  nav { display: flex; gap: 4px; }
+  nav button {
+    background: none; border: none; color: var(--muted);
+    font-family: var(--font-body); font-size: 0.85rem;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  nav button.active, nav button:hover {
+    background: var(--surface2); color: var(--text);
+  }
+  nav button.active { color: var(--accent); }
+
+  /* ── MAIN ── */
+  main {
+    padding-top: 80px;
+    min-height: 100vh;
+    position: relative; z-index: 1;
+  }
+
+  .page { display: none; animation: fadeIn 0.3s ease; }
+  .page.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 40px 60px;
+    max-width: 1100px; margin: 0 auto;
+  }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,229,160,0.08);
+    border: 1px solid rgba(0,229,160,0.2);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 0.78rem; color: var(--accent);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .hero-tag::before { content: '●'; font-size: 0.5rem; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+
+  .hero-sub {
+    font-size: 1.1rem; color: var(--muted);
+    max-width: 520px; line-height: 1.6;
+    margin-bottom: 48px;
+  }
+
+  /* ── FORMULARIO ── */
+  .consulta-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    max-width: 700px;
+    position: relative;
+    overflow: hidden;
+  }
+  .consulta-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .consulta-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px; margin-bottom: 24px;
+  }
+
+  .field label {
+    display: block; font-size: 0.75rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .field select, .field input {
+    width: 100%;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font-body); font-size: 0.95rem;
+    padding: 12px 16px; border-radius: 12px; outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  .field select:focus, .field input:focus {
+    border-color: var(--accent);
+  }
+
+  .btn-consultar {
+    width: 100%;
+    background: var(--accent); color: #0a0a0f;
+    font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+    border: none; border-radius: 12px; padding: 16px;
+    cursor: pointer; transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .btn-consultar:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,160,0.25); }
+  .btn-consultar:active { transform: none; }
+
+  /* ── RESULTADO ── */
+  .resultado {
+    margin-top: 28px;
+    background: var(--surface2);
+    border-radius: 16px;
+    padding: 28px;
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+  .resultado.visible { display: block; }
+
+  .nivel-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 10px 20px; border-radius: 100px;
+    font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+    margin-bottom: 16px;
+  }
+  .nivel-badge.tranquilo { background: rgba(0,229,160,0.12);  color: var(--accent);  border: 1px solid rgba(0,229,160,0.3); }
+  .nivel-badge.normal    { background: rgba(245,197,24,0.12);  color: var(--warn);    border: 1px solid rgba(245,197,24,0.3); }
+  .nivel-badge.ocupado   { background: rgba(255,122,69,0.12);  color: #ff7a45;        border: 1px solid rgba(255,122,69,0.3); }
+  .nivel-badge.saturado  { background: rgba(255,77,109,0.18);  color: var(--danger);  border: 1px solid rgba(255,77,109,0.5); }
+
+  .ocupacion-bar {
+    width: 100%; height: 8px;
+    background: var(--border); border-radius: 100px;
+    margin: 16px 0; overflow: hidden;
+  }
+  .ocupacion-fill {
+    height: 100%; border-radius: 100px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .consejo-box {
+    background: rgba(124,109,250,0.08);
+    border: 1px solid rgba(124,109,250,0.2);
+    border-radius: 12px; padding: 16px 20px;
+    color: #c4bcff; font-size: 0.9rem; line-height: 1.5;
+    margin-top: 16px;
+  }
+
+  .evento-aplicado-box {
+    background: rgba(255,77,109,0.06);
+    border: 1px solid rgba(255,77,109,0.2);
+    border-radius: 12px; padding: 14px 18px;
+    font-size: 0.85rem; line-height: 1.5;
+    margin-top: 12px;
+    display: none;
+  }
+  .evento-aplicado-box.visible { display: block; }
+
+  .sugerencia-box {
+    background: rgba(0,229,160,0.06);
+    border: 1px solid rgba(0,229,160,0.2);
+    border-radius: 12px; padding: 14px 18px;
+    font-size: 0.9rem; color: #b8fff0; line-height: 1.5;
+    margin-top: 12px;
+    display: none; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .sugerencia-box.visible { display: block; }
+  .sugerencia-box:hover { background: rgba(0,229,160,0.1); }
+
+  .alternativas h4 {
+    font-size: 0.8rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin: 20px 0 12px;
+  }
+
+  .alt-grid {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+
+  .alt-chip {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px;
+    font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+  }
+  .alt-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .alt-chip .hora { font-weight: 600; }
+  .alt-chip .pct  { font-size: 0.75rem; color: var(--muted); margin-left: 6px; }
+
+  /* ── EVENTOS ── */
+  .eventos-section {
+    max-width: 700px;
+    margin-top: 32px;
+  }
+  .eventos-titulo {
+    font-size: 0.78rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  .evento-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 8px;
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 16px;
+  }
+  .evento-card-desc { font-size: 0.9rem; font-weight: 500; }
+  .evento-card-meta { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .evento-factor {
+    font-size: 0.85rem; font-weight: 700;
+    white-space: nowrap; padding-top: 2px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    padding: 60px 40px;
+    max-width: 1100px; margin: 0 auto;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .section-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
+
+  /* ── HEATMAP ── */
+  .heatmap-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    overflow-x: auto;
+  }
+
+  .heatmap-label-row {
+    display: grid;
+    grid-template-columns: 60px repeat(24, 1fr);
+    gap: 3px; margin-bottom: 3px;
+  }
+  .heatmap-label { font-size: 0.65rem; color: var(--muted); text-align: center; }
+
+  .heatmap-row {
+    display: grid;
+    grid-template-columns: 60px repeat(24, 1fr);
+    gap: 3px; margin-bottom: 3px;
+  }
+
+  .heatmap-day { font-size: 0.7rem; color: var(--muted); display: flex; align-items: center; }
+
+  .heatmap-cell {
+    height: 28px; border-radius: 4px;
+    cursor: pointer; transition: transform 0.15s;
+    position: relative;
+  }
+  .heatmap-cell:hover { transform: scale(1.3); z-index: 10; }
+  .heatmap-cell:hover::after {
+    content: attr(data-tip);
+    position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-size: 0.7rem; white-space: nowrap;
+    padding: 4px 8px; border-radius: 6px; pointer-events: none;
+  }
+
+  /* ── CHAT ── */
+  .chat-wrapper {
+    padding: 60px 40px;
+    max-width: 800px; margin: 0 auto;
+  }
+
+  .chat-messages {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    height: 440px; overflow-y: auto;
+    padding: 24px;
+    display: flex; flex-direction: column; gap: 16px;
+    margin-bottom: 16px;
+    scroll-behavior: smooth;
+  }
+
+  .msg {
+    max-width: 85%;
+    padding: 14px 18px;
+    border-radius: 16px;
+    font-size: 0.9rem; line-height: 1.55;
+    animation: fadeIn 0.3s ease;
+  }
+  .msg.bot {
+    background: var(--surface2); border: 1px solid var(--border);
+    align-self: flex-start; border-bottom-left-radius: 4px;
+  }
+  .msg.user {
+    background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.2);
+    align-self: flex-end; border-bottom-right-radius: 4px; color: #c8fff0;
+  }
+  .msg.typing { opacity: 0.6; font-style: italic; }
+
+  .chat-input-row {
+    display: flex; gap: 12px;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font-body); font-size: 0.95rem;
+    padding: 14px 20px; border-radius: 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+
+  .btn-send {
+    background: var(--accent2); color: white;
+    border: none; border-radius: 14px; padding: 14px 24px;
+    font-family: var(--font-display); font-weight: 700;
+    cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+  }
+  .btn-send:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,109,250,0.3); }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .sugerencias {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+  }
+  .sug-chip {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 100px; padding: 7px 14px;
+    font-size: 0.8rem; color: var(--muted); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sug-chip:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── EMPRESA ── */
+  .empresa-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px;
+  }
+  .stat-card .label {
+    font-size: 0.78rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+  .stat-card .value {
+    font-family: var(--font-display); font-size: 2.4rem; font-weight: 800;
+    line-height: 1;
+  }
+  .stat-card .value.green  { color: var(--accent); }
+  .stat-card .value.purple { color: var(--accent2); }
+  .stat-card .delta { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+
+  .empleados-list {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+    margin-top: 20px;
+  }
+
+  .empleado-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .empleado-row:last-child { border-bottom: none; }
+  .emp-name { font-size: 0.9rem; }
+  .emp-linea { font-size: 0.8rem; color: var(--muted); }
+  .emp-badge {
+    font-size: 0.75rem; padding: 4px 10px; border-radius: 100px;
+    font-weight: 600;
+  }
+  .emp-badge.ahorrado  { background: rgba(0,229,160,0.1);  color: var(--accent); }
+  .emp-badge.pendiente { background: rgba(245,197,24,0.1);  color: var(--warn); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--muted); font-size: 0.8rem;
+    position: relative; z-index: 1;
+  }
+  .footer-logo { font-family: var(--font-display); font-weight: 700; color: var(--text); }
+  .footer-logo span { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">CUÁNDO<span>Viajo</span></div>
+  <nav>
+    <button class="active" onclick="showPage('inicio')">Inicio</button>
+    <button onclick="showPage('mapa')">Mapa de calor</button>
+    <button onclick="showPage('asistente')">Asistente IA</button>
+    <button onclick="showPage('empresa')">Panel Empresa</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ── PÁGINA INICIO ── -->
+  <div class="page active" id="page-inicio">
+    <div class="hero">
+      <div class="hero-tag">Subte Buenos Aires · Predicción con IA</div>
+      <h1>Viajá cuando<br>conviene, <em>cuando estés cómodo</em></h1>
+      <p class="hero-sub">CUÁNDOViajo predice los picos de demanda en el subte y te sugiere el mejor horario para viajar cómodo/a. Las empresas subsidian el cambio de hábito.</p>
+
+      <div class="consulta-card">
+        <div class="consulta-grid">
+          <div class="field">
+            <label>Línea</label>
+            <select id="sel-linea" onchange="updateEstaciones(); updateTimeOptions();">
+              <option value="A">Línea A</option>
+              <option value="B">Línea B</option>
+              <option value="C">Línea C</option>
+              <option value="D">Línea D</option>
+              <option value="E">Línea E</option>
+              <option value="H">Línea H</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Estación</label>
+            <select id="sel-estacion"></select>
+          </div>
+          <div class="field">
+            <label>Día</label>
+            <select id="sel-dia" onchange="updateTimeOptions()">
+              <option value="0">Lunes</option>
+              <option value="1">Martes</option>
+              <option value="2">Miércoles</option>
+              <option value="3">Jueves</option>
+              <option value="4">Viernes</option>
+              <option value="5">Sábado</option>
+              <option value="6">Domingo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Horario</label>
+            <select id="sel-hora"></select>
+          </div>
+        </div>
+        <button class="btn-consultar" onclick="consultar()">Consultar ocupación →</button>
+
+        <div class="resultado" id="resultado">
+          <div id="nivel-badge" class="nivel-badge"></div>
+          <div style="font-size:0.85rem; color:var(--muted);" id="resultado-titulo"></div>
+          <div class="ocupacion-bar">
+            <div class="ocupacion-fill" id="ocupacion-fill"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--muted);margin-bottom:4px;">
+            <span>Vacío</span><span id="pct-label"></span><span>Saturado</span>
+          </div>
+
+          <div class="evento-aplicado-box" id="evento-aplicado"></div>
+          <div class="consejo-box" id="consejo-box"></div>
+          <div class="sugerencia-box" id="sugerencia-box"></div>
+
+          <div class="alternativas" id="alternativas-section">
+            <h4>Otros horarios disponibles</h4>
+            <div class="alt-grid" id="alt-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eventos activos -->
+      <div class="eventos-section">
+        <div class="eventos-titulo">Eventos activos hoy</div>
+        <div id="eventos-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PÁGINA MAPA DE CALOR ── -->
+  <div class="page" id="page-mapa">
+    <div class="section">
+      <div class="section-title">Mapa de calor de demanda</div>
+      <div class="section-sub">Ocupación promedio por hora y día de la semana · Línea <span id="heatmap-linea-label">A</span></div>
+
+      <div style="margin-bottom:20px;">
+        <div class="field" style="display:inline-block;width:160px;">
+          <label>Ver línea</label>
+          <select id="heatmap-linea" onchange="renderHeatmap()">
+            <option value="A">Línea A</option>
+            <option value="B">Línea B</option>
+            <option value="C">Línea C</option>
+            <option value="D">Línea D</option>
+            <option value="E">Línea E</option>
+            <option value="H">Línea H</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="heatmap-container">
+        <div class="heatmap-label-row">
+          <div></div>
+        </div>
+        <div id="heatmap-body"></div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:16px;align-items:center;font-size:0.8rem;color:var(--muted);">
+        <span>Tranquilo</span>
+        <div style="display:flex;gap:3px;">
+          <div style="width:16px;height:16px;border-radius:3px;background:#0a2e1e;"></div>
+          <div style="width:16px;height:16px;border-radius:3px;background:#0f4a2d;"></div>
+          <div style="width:16px;height:16px;border-radius:3px;background:#f5c518;"></div>
+          <div style="width:16px;height:16px;border-radius:3px;background:#ff7a45;"></div>
+          <div style="width:16px;height:16px;border-radius:3px;background:#ff4d6d;"></div>
+        </div>
+        <span>Saturado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PÁGINA ASISTENTE IA ── -->
+  <div class="page" id="page-asistente">
+    <div class="chat-wrapper">
+      <div class="section-title" style="margin-bottom:6px;">Asistente CUÁNDOViajo</div>
+      <div class="section-sub" style="margin-bottom:24px;">Preguntame sobre tu viaje, horarios o cómo ahorrar tiempo</div>
+
+      <div class="sugerencias">
+        <div class="sug-chip" onclick="preguntarSugerencia(this)">¿Conviene salir ahora en la línea B?</div>
+        <div class="sug-chip" onclick="preguntarSugerencia(this)">¿Cuál es el mejor horario para la línea D el lunes?</div>
+        <div class="sug-chip" onclick="preguntarSugerencia(this)">¿Hay eventos que afecten el servicio hoy?</div>
+        <div class="sug-chip" onclick="preguntarSugerencia(this)">¿Qué líneas están libres a las 18hs del viernes?</div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg bot">¡Hola! Soy el asistente de CUÁNDOViajo 🚇<br>Puedo ayudarte a encontrar el mejor horario para viajar en subte en Buenos Aires. ¿Sobre qué línea o franja horaria querés saber?</div>
+      </div>
+
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-input" type="text"
+          placeholder="Ej: ¿está llena la línea C a las 8am el miércoles?"
+          onkeydown="if(event.key==='Enter') enviarMensaje()">
+        <button class="btn-send" id="btn-send" onclick="enviarMensaje()">Enviar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PÁGINA EMPRESA ── -->
+  <div class="page" id="page-empresa">
+    <div class="section">
+      <div class="section-title">Panel Corporativo</div>
+      <div class="section-sub">Seguí el impacto del programa de movilidad inteligente en tu empresa</div>
+
+      <div class="empresa-grid">
+        <div class="stat-card">
+          <div class="label">Viajes incentivados este mes</div>
+          <div class="value green">1.847</div>
+          <div class="delta">↑ 23% vs mes anterior</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Ahorro promedio por empleado</div>
+          <div class="value purple">18 min</div>
+          <div class="delta">Por viaje en hora alternativa</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Empleados participando</div>
+          <div class="value green">142</div>
+          <div class="delta">De 380 totales · 37%</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Inversión total del mes</div>
+          <div class="value">$284.000</div>
+          <div class="delta">≈ $154 por viaje incentivado</div>
+        </div>
+      </div>
+
+      <div class="empleados-list">
+        <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">Actividad reciente</div>
+        <div class="empleado-row">
+          <div><div class="emp-name">María González</div><div class="emp-linea">Línea B · Salió 7:10hs en vez de 8:30hs</div></div>
+          <div class="emp-badge ahorrado">−22 min</div>
+        </div>
+        <div class="empleado-row">
+          <div><div class="emp-name">Lucas Fernández</div><div class="emp-linea">Línea D · Salió 19:30hs en vez de 18:00hs</div></div>
+          <div class="emp-badge ahorrado">−15 min</div>
+        </div>
+        <div class="empleado-row">
+          <div><div class="emp-name">Carla Méndez</div><div class="emp-linea">Línea C · Pendiente de cambio hoy</div></div>
+          <div class="emp-badge pendiente">Pendiente</div>
+        </div>
+        <div class="empleado-row">
+          <div><div class="emp-name">Rodrigo Paz</div><div class="emp-linea">Línea A · Salió 10:00hs en vez de 8:30hs</div></div>
+          <div class="emp-badge ahorrado">−28 min</div>
+        </div>
+        <div class="empleado-row">
+          <div><div class="emp-name">Ana Soria</div><div class="emp-linea">Línea H · Salió 7:00hs en vez de 8:00hs</div></div>
+          <div class="emp-badge ahorrado">−18 min</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-logo">CUÁNDO<span>Viajo</span></div>
+  <div>Hackathón Y-Hat · Exactas UBA · 2026</div>
+</footer>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DATOS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CURVA = {
+  0:0.04,1:0.02,2:0.02,3:0.02,4:0.04,5:0.10,6:0.30,7:0.70,8:1.0,9:0.88,
+  10:0.55,11:0.45,12:0.50,13:0.58,14:0.52,15:0.50,16:0.62,17:0.80,18:0.96,
+  19:1.0,20:0.78,21:0.52,22:0.32,23:0.16
+};
+
+const FACTOR_DIA = {0:1.0,1:0.98,2:0.97,3:0.99,4:1.05,5:0.68,6:0.42};
+
+const DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+const STATION_SEQUENCES = {
+  'A': ['Plaza de Mayo','Peru','Piedras','Lima','Saenz Peña','Congreso','Pasco','Alberti','Plaza Miserere','Loria','Castro Barros','Rio de Janeiro','Acoyte','Primera Junta','Puan','Carabobo','Flores','San Pedrito'],
+  'B': ['Leandro N. Alem','Florida','Carlos Pellegrini','Uruguay','Callao.B','Pasteur','Pueyrredon','Carlos Gardel','Medrano','Angel Gallardo','Malabia','Dorrego','Federico Lacroze','Tronador','Los Incas','Echeverria','Rosas'],
+  'C': ['Constitucion','San Juan','Independencia','Mariano Moreno','Avenida de Mayo','Diagonal Norte','Lavalle','General San Martin','Retiro'],
+  'D': ['Catedral','9 de julio','Tribunales','Callao','Facultad de Medicina','Pueyrredon.D','Agüero','Bulnes','Scalabrini Ortiz','Plaza Italia','Palermo','Ministro Carranza','Olleros','Jose Hernandez','Juramento','Congreso de Tucuman'],
+  'E': ['Pza. de los Virreyes','Varela','Medalla Milagrosa','Emilio Mitre','Jose Maria Moreno','Avenida La Plata','Boedo','Urquiza','Jujuy','Pichincha','Entre Rios','San Jose','Independencia.H','General Belgrano','Bolivar','Correo Central','Catalinas','Retiro E'],
+  'H': ['Hospitales','Patricios','Caseros','Inclan','Humberto I','Venezuela','Once','Corrientes','Cordoba','Santa Fe','Las Heras','Facultad de Derecho']
+};
+
+// Horarios de servicio (mirrors app.py _OPENING / _CLOSING)
+const OPENING = {0:'05:30',1:'05:30',2:'05:30',3:'05:30',4:'05:30',5:'06:00',6:'08:00'};
+const CLOSING = {
+  'LineaA':{0:'23:28',1:'23:28',2:'23:28',3:'23:28',4:'23:28',5:'23:57',6:'22:36'},
+  'LineaB':{0:'23:30',1:'23:30',2:'23:30',3:'23:30',4:'23:30',5:'23:53',6:'22:28'},
+  'LineaC':{0:'23:33',1:'23:33',2:'23:33',3:'23:33',4:'23:33',5:'23:54',6:'22:34'},
+  'LineaD':{0:'23:28',1:'23:28',2:'23:28',3:'23:28',4:'23:28',5:'23:52',6:'22:28'},
+  'LineaE':{0:'23:30',1:'23:30',2:'23:30',3:'23:30',4:'23:30',5:'23:58',6:'22:28'},
+  'LineaH':{0:'23:51',1:'23:51',2:'23:51',3:'23:51',4:'23:51',5:'23:45',6:'22:51'},
+};
+
+// Eventos hardcodeados (mirrors news_agent.py)
+const EVENTS = [
+  {
+    descripcion: 'Recital de Coldplay en el Estadio Monumental',
+    lineas: ['D'], estaciones: ['Congreso de Tucuman','Juramento','Jose Hernandez'],
+    inicio: '21:30', fin: '23:59', factor: 2.2, tipo: 'aumento', icon: '📈'
+  },
+  {
+    descripcion: 'Partido de River Plate en el Estadio Monumental',
+    lineas: ['D'], estaciones: ['Congreso de Tucuman','Juramento'],
+    inicio: '20:00', fin: '22:30', factor: 1.9, tipo: 'aumento', icon: '📈'
+  },
+  {
+    descripcion: 'Corte total de servicio en Línea C por mantenimiento',
+    lineas: ['C'], estaciones: ['Constitucion','San Juan','Independencia','Mariano Moreno','Avenida de Mayo','Diagonal Norte','Lavalle','General San Martin','Retiro'],
+    inicio: '00:00', fin: '23:59', factor: 0.1, tipo: 'disminucion', icon: '📉'
+  },
+  {
+    descripcion: 'Marcha sindical con concentración en Plaza de Mayo',
+    lineas: ['A','C','D','E'], estaciones: ['Plaza de Mayo','Peru','Piedras','Avenida de Mayo','Diagonal Norte','Catedral','9 de julio','Bolivar'],
+    inicio: '15:00', fin: '19:00', factor: 1.5, tipo: 'aumento', icon: '📈'
+  },
+];
+
+// Umbral proporcional de mejora para sugerencias
+const SUGGEST_IMPROVEMENT = 0.25;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OCUPACIÓN
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getOcupacionLocal(linea, hora, min, dia, estacion) {
+  const base = CURVA[hora] * FACTOR_DIA[dia] * 100;
+
+  // Factor por posición en la línea: carga máxima en el segmento central
+  let stFactor = 1.0;
+  if (estacion) {
+    const seq = STATION_SEQUENCES[linea] || [];
+    const pos = seq.indexOf(estacion);
+    if (pos >= 0 && seq.length > 1) {
+      const norm = pos / (seq.length - 1);
+      stFactor = 0.65 + 0.55 * Math.sin(norm * Math.PI);
+    }
+  }
+
+  // Ruido determinístico por entidad (evita valores idénticos entre estaciones)
+  const stPos = estacion ? (STATION_SEQUENCES[linea] || []).indexOf(estacion) : 0;
+  const seed  = (linea.charCodeAt(0) * 13 + hora * 7 + dia * 11 + Math.max(stPos, 0) * 5) % 17 - 8;
+
+  return Math.min(100, Math.max(0, Math.round(base * stFactor + seed)));
+}
+
+function applyEvent(linea, estacion, hora, min) {
+  const tStr = `${String(hora).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+  for (const ev of EVENTS) {
+    if (!ev.lineas.includes(linea)) continue;
+    if (estacion && ev.estaciones.length > 0 && !ev.estaciones.includes(estacion)) continue;
+    if (tStr >= ev.inicio && tStr <= ev.fin) return ev;
+  }
+  return null;
+}
+
+async function getOcupacion(linea, hora, min, dia, estacion) {
+  // Producción: llamar al backend. Fallback inmediato si no responde.
+  try {
+    const params = new URLSearchParams({linea, hora, min: min||0, dia, estacion: estacion||''});
+    const r = await fetch(`https://cuandoviajo.onrender.com/ocupacion?${params}`,
+                         { signal: AbortSignal.timeout(2500) });
+    if (!r.ok) throw new Error();
+    return (await r.json()).ocupacion_pct;
+  } catch {
+    const base = getOcupacionLocal(linea, hora, min||0, dia, estacion||null);
+    const ev   = applyEvent(linea, estacion||null, hora, min||0);
+    return Math.min(100, Math.max(0, Math.round(base * (ev ? ev.factor : 1))));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATEGORÍAS (mirrors app.py occupancy_label)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getNivel(pct) {
+  if (pct < 30) return { nivel:'Tranquilo', emoji:'🟢', clase:'tranquilo', color:'#00e5a0' };
+  if (pct < 60) return { nivel:'Normal',    emoji:'🟡', clase:'normal',    color:'#f5c518' };
+  if (pct < 80) return { nivel:'Ocupado',   emoji:'🟠', clase:'ocupado',   color:'#ff7a45' };
+  return             { nivel:'Saturado',   emoji:'🔴', clase:'saturado',  color:'#ff4d6d' };
+}
+
+function getConsejo(nivel) {
+  return {
+    'Tranquilo': 'Momento ideal para viajar. Vas a encontrar espacio cómodo y probablemente asiento.',
+    'Normal':    'Podés viajar bien. Hay gente pero sin saturación. Cómodo para la mayoría.',
+    'Ocupado':   'El subte va bastante lleno. Si podés ajustar el horario, el viaje va a ser notablemente más cómodo.',
+    'Saturado':  'Saturación máxima. Probablemente tengas que dejar pasar más de un subte para poder subir.',
+  }[nivel];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HORARIOS OPERATIVOS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function isOperating(linea, hora, min, dia) {
+  const tStr    = `${String(hora).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+  const openStr = OPENING[dia];
+  const closeStr = CLOSING['Linea' + linea]?.[dia] || '23:00';
+  return tStr >= openStr && tStr <= closeStr;
+}
+
+function updateTimeOptions() {
+  const linea = document.getElementById('sel-linea').value;
+  const dia   = parseInt(document.getElementById('sel-dia').value);
+  const sel   = document.getElementById('sel-hora');
+  const prev  = sel.value;
+
+  const openStr  = OPENING[dia];
+  const closeStr = CLOSING['Linea' + linea]?.[dia] || '23:00';
+
+  sel.innerHTML = '';
+  for (let h = 0; h < 24; h++) {
+    for (const m of [0, 15, 30, 45]) {
+      const tStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      if (tStr < openStr || tStr > closeStr) continue;
+      const opt = document.createElement('option');
+      opt.value = tStr;
+      opt.textContent = tStr;
+      sel.appendChild(opt);
+    }
+  }
+
+  const opts = [...sel.options].map(o => o.value);
+  if (opts.includes(prev))   sel.value = prev;
+  else if (opts.includes('08:00')) sel.value = '08:00';
+}
+
+function updateEstaciones() {
+  const linea = document.getElementById('sel-linea').value;
+  const sel   = document.getElementById('sel-estacion');
+  sel.innerHTML = '';
+  (STATION_SEQUENCES[linea] || []).forEach(est => {
+    const opt = document.createElement('option');
+    opt.value = est; opt.textContent = est;
+    sel.appendChild(opt);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUGERENCIA (mirrors app.py find_better_time: ±30 min, 25 % proporcional)
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function buscarMejorHorario(linea, estacion, hora, min, dia, ocupActual) {
+  if (getNivel(ocupActual).nivel === 'Tranquilo') return null;
+  const target = ocupActual * (1 - SUGGEST_IMPROVEMENT);
+  const candidates = [];
+
+  for (const [sign, dir] of [[-1,'antes'],[1,'después']]) {
+    for (const off of [15, 30]) {
+      const totalMin = hora * 60 + min + sign * off;
+      if (totalMin < 0 || totalMin >= 24 * 60) continue;
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      if (!isOperating(linea, h, m, dia)) continue;
+
+      const occ = await getOcupacion(linea, h, m, dia, estacion);
+      if (occ < target) {
+        candidates.push({ h, m, off, dir, occ });
+        break;
+      }
+    }
+  }
+
+  return candidates.length > 0
+    ? candidates.sort((a, b) => a.off - b.off)[0]
+    : null;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONSULTA PRINCIPAL
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function consultar() {
+  const linea    = document.getElementById('sel-linea').value;
+  const estacion = document.getElementById('sel-estacion').value;
+  const dia      = parseInt(document.getElementById('sel-dia').value);
+  const horaStr  = document.getElementById('sel-hora').value;
+  const hora     = parseInt(horaStr.split(':')[0]);
+  const min      = parseInt(horaStr.split(':')[1] || 0);
+
+  // Ocupación base + evento
+  const baseOcc  = getOcupacionLocal(linea, hora, min, dia, estacion);
+  const ev       = applyEvent(linea, estacion, hora, min);
+  const pct      = Math.min(100, Math.max(0, Math.round(baseOcc * (ev ? ev.factor : 1))));
+  const info     = getNivel(pct);
+
+  // Badge
+  const badge = document.getElementById('nivel-badge');
+  badge.textContent = `${info.emoji} ${info.nivel}`;
+  badge.className   = `nivel-badge ${info.clase}`;
+
+  // Título
+  document.getElementById('resultado-titulo').textContent =
+    `Línea ${linea} · ${estacion} · ${DIAS[dia]} ${horaStr}hs`;
+
+  // Barra
+  const fill = document.getElementById('ocupacion-fill');
+  fill.style.width = '0%';
+  fill.style.background = info.color;
+  setTimeout(() => fill.style.width = pct + '%', 50);
+  document.getElementById('pct-label').textContent = pct + '%';
+
+  // Evento
+  const evBox = document.getElementById('evento-aplicado');
+  if (ev) {
+    evBox.innerHTML = `${ev.icon} <strong>${ev.descripcion}</strong> — factor ×${ev.factor} · ${ev.inicio}–${ev.fin}`;
+    evBox.classList.add('visible');
+  } else {
+    evBox.classList.remove('visible');
+  }
+
+  // Consejo
+  document.getElementById('consejo-box').textContent = `💡 ${getConsejo(info.nivel)}`;
+
+  // Sugerencia proporcional
+  const sugBox = document.getElementById('sugerencia-box');
+  const mejor  = await buscarMejorHorario(linea, estacion, hora, min, dia, pct);
+  if (mejor) {
+    const mejorInfo = getNivel(mejor.occ);
+    const hStr = `${String(mejor.h).padStart(2,'0')}:${String(mejor.m).padStart(2,'0')}`;
+    sugBox.innerHTML  = `💡 Si salís <strong>${mejor.off} min ${mejor.dir}</strong> (${hStr}hs) vas a viajar mejor: ${mejorInfo.emoji} ${mejorInfo.nivel} (~${mejor.occ}%)`;
+    sugBox.classList.add('visible');
+    sugBox.onclick = () => {
+      document.getElementById('sel-hora').value = hStr;
+      consultar();
+    };
+  } else {
+    sugBox.classList.remove('visible');
+  }
+
+  // Alternativas: 4 mejores slots del día (excluyendo el consultado y la sugerencia)
+  const altGrid = document.getElementById('alt-grid');
+  altGrid.innerHTML = '';
+  const altSec = document.getElementById('alternativas-section');
+
+  if (info.nivel !== 'Tranquilo') {
+    altSec.style.display = 'block';
+    const candidatas = [];
+    for (let h = 0; h < 24; h++) {
+      for (const m of [0, 30]) {
+        if (h === hora && m === min) continue;
+        if (!isOperating(linea, h, m, dia)) continue;
+        const p = await getOcupacion(linea, h, m, dia, estacion);
+        candidatas.push({ h, m, p });
+      }
+    }
+    candidatas.sort((a, b) => a.p - b.p).slice(0, 5).forEach(({ h, m, p }) => {
+      const n    = getNivel(p);
+      const tStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      const chip = document.createElement('div');
+      chip.className = 'alt-chip';
+      chip.innerHTML = `<span class="hora">${n.emoji} ${tStr}hs</span><span class="pct">${p}%</span>`;
+      chip.onclick = () => {
+        document.getElementById('sel-hora').value = tStr;
+        consultar();
+      };
+      altGrid.appendChild(chip);
+    });
+  } else {
+    altSec.style.display = 'none';
+  }
+
+  document.getElementById('resultado').classList.add('visible');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEATMAP
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function renderHeatmap() {
+  const linea = document.getElementById('heatmap-linea').value;
+  document.getElementById('heatmap-linea-label').textContent = linea;
+
+  const labelRow = document.querySelector('.heatmap-label-row');
+  labelRow.innerHTML = '<div></div>';
+  for (let h = 0; h < 24; h++) {
+    const d = document.createElement('div');
+    d.className = 'heatmap-label';
+    d.textContent = h % 3 === 0 ? `${h}h` : '';
+    labelRow.appendChild(d);
+  }
+
+  const body = document.getElementById('heatmap-body');
+  body.innerHTML = '';
+  for (let d = 0; d < 7; d++) {
+    const row = document.createElement('div');
+    row.className = 'heatmap-row';
+
+    const dayLabel = document.createElement('div');
+    dayLabel.className = 'heatmap-day';
+    dayLabel.textContent = DIAS[d];
+    row.appendChild(dayLabel);
+
+    for (let h = 0; h < 24; h++) {
+      const cell = document.createElement('div');
+      cell.className = 'heatmap-cell';
+
+      if (isOperating(linea, h, 0, d)) {
+        const pct = await getOcupacion(linea, h, 0, d, null);
+        cell.style.background = heatColor(pct);
+        cell.setAttribute('data-tip', `${DIAS[d]} ${String(h).padStart(2,'0')}:00 · ${getNivel(pct).emoji} ${getNivel(pct).nivel} (${pct}%)`);
+        cell.onclick = () => {
+          showPage('inicio');
+          document.getElementById('sel-linea').value = linea;
+          document.getElementById('sel-dia').value   = d;
+          updateEstaciones();
+          updateTimeOptions();
+          const opt = [...document.getElementById('sel-hora').options].find(o => o.value.startsWith(String(h).padStart(2,'0')));
+          if (opt) document.getElementById('sel-hora').value = opt.value;
+          consultar();
+        };
+      } else {
+        cell.style.background = 'transparent';
+        cell.style.cursor = 'default';
+      }
+      row.appendChild(cell);
+    }
+    body.appendChild(row);
+  }
+}
+
+function heatColor(pct) {
+  if (pct < 20) return '#0a2e1e';
+  if (pct < 40) return '#0f4a2d';
+  if (pct < 60) return '#1a7a3c';
+  if (pct < 75) return '#f5c518';
+  if (pct < 85) return '#ff7a45';
+  return '#ff4d6d';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENTOS EN HOME
+// ─────────────────────────────────────────────────────────────────────────────
+
+function renderEventos() {
+  const list = document.getElementById('eventos-list');
+  list.innerHTML = '';
+  if (EVENTS.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:0.88rem;">Sin eventos registrados hoy.</div>';
+    return;
+  }
+  EVENTS.forEach(ev => {
+    const card = document.createElement('div');
+    card.className = 'evento-card';
+    const lineasStr = ev.lineas.map(l => `L${l}`).join(', ');
+    const factorColor = ev.tipo === 'aumento' ? 'var(--danger)' : 'var(--accent)';
+    card.innerHTML = `
+      <div>
+        <div class="evento-card-desc">${ev.icon} ${ev.descripcion}</div>
+        <div class="evento-card-meta">${lineasStr} · ${ev.inicio}–${ev.fin}</div>
+      </div>
+      <div class="evento-factor" style="color:${factorColor}">×${ev.factor}</div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHAT (respuestas locales basadas en contexto del sistema)
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function generarRespuesta(msg) {
+  const m = msg.toLowerCase();
+
+  const lineaMatch = m.match(/l[ií]nea\s*([abcdeh])\b|subte\s+([abcdeh])\b/i);
+  const linea = lineaMatch ? (lineaMatch[1] || lineaMatch[2]).toUpperCase() : null;
+
+  const horaMatch  = m.match(/(\d{1,2})(?::(\d{2}))?\s*(?:hs?|am|pm|h\b)/i);
+  const hora = horaMatch ? parseInt(horaMatch[1]) : null;
+
+  const hablaEvento   = /recital|coldplay|river|partido|corte|marcha|manifestaci|event/i.test(m);
+  const pideConsejo   = /mejor\s+horario|cu[aá]ndo|conviene|mejor\s+momento|m[aá]s\s+libre/i.test(m);
+  const pideComparativa = /qu[eé]\s+l[ií]neas|comparar|comparaci[oó]n/i.test(m);
+
+  const diaActual = (new Date().getDay() + 6) % 7;
+
+  if (hablaEvento) {
+    return `Hoy hay cuatro eventos que impactan el servicio:\n\n` +
+      `📈 **Recital de Coldplay** — LineaD norte (Juramento, Congreso de Tucumán): ocupación ×2.2 de 21:30 a 23:59.\n` +
+      `📈 **Partido River Plate** — LineaD norte: factor ×1.9 de 20:00 a 22:30.\n` +
+      `📉 **Corte LineaC** — Servicio suspendido todo el día. Alternativas: LineaA (centro) o LineaD.\n` +
+      `📈 **Marcha sindical Plaza de Mayo** — LineaA/C/D/E zona centro: factor ×1.5 de 15:00 a 19:00.\n\n` +
+      `Si tu viaje involucra alguna de estas líneas en esos horarios, te recomiendo consultar el formulario para ver la ocupación ajustada.`;
+  }
+
+  if (pideComparativa) {
+    const horaRef = hora || 8;
+    const resultados = [];
+    for (const l of ['A','B','C','D','E','H']) {
+      const pct = await getOcupacion(l, horaRef, 0, diaActual, null);
+      resultados.push({ l, pct, info: getNivel(pct) });
+    }
+    resultados.sort((a, b) => a.pct - b.pct);
+    const lista = resultados.map(r => `${r.info.emoji} Línea ${r.l}: ${r.pct}% (${r.info.nivel})`).join('\n');
+    return `Ocupación estimada a las ${String(horaRef).padStart(2,'0')}:00hs de hoy:\n\n${lista}\n\nLas menos cargadas son ${resultados[0].info.emoji} Línea ${resultados[0].l} y ${resultados[1].info.emoji} Línea ${resultados[1].l}.`;
+  }
+
+  if (linea && hora !== null) {
+    const pct  = await getOcupacion(linea, hora, 0, diaActual, null);
+    const info = getNivel(pct);
+    let resp = `Línea ${linea} a las ${String(hora).padStart(2,'0')}:00hs: **${pct}%** de ocupación → ${info.emoji} ${info.nivel}.\n\n${getConsejo(info.nivel)}`;
+
+    if (info.nivel !== 'Tranquilo') {
+      const mejor = await buscarMejorHorario(linea, null, hora, 0, diaActual, pct);
+      if (mejor) {
+        const mejorStr = `${String(mejor.h).padStart(2,'0')}:${String(mejor.m).padStart(2,'0')}`;
+        resp += `\n\n💡 Si salís **${mejor.off} min ${mejor.dir}** (${mejorStr}hs) el nivel baja a ${getNivel(mejor.occ).emoji} ${getNivel(mejor.occ).nivel} (~${mejor.occ}%).`;
+      }
+    }
+    return resp;
+  }
+
+  if (linea && pideConsejo) {
+    const picos = [];
+    for (let h = 5; h <= 23; h++) {
+      const p = await getOcupacion(linea, h, 0, diaActual, null);
+      if (p >= 60) picos.push(`${String(h).padStart(2,'0')}:00hs (${p}%)`);
+    }
+    return `Los picos en Línea ${linea} hoy son: **${picos.slice(0,4).join(', ')}**.\n\nLos mejores momentos para viajar cómodo son antes de las 07:00hs, entre las 10:00 y las 16:00hs, y después de las 21:00hs.`;
+  }
+
+  if (linea) {
+    const pct  = await getOcupacion(linea, new Date().getHours(), 0, diaActual, null);
+    const info = getNivel(pct);
+    return `Línea ${linea} ahora mismo: **${pct}%** → ${info.emoji} ${info.nivel}.\n${getConsejo(info.nivel)}\n\nSi querés saber de un horario específico, mencionalo en tu consulta (ej: "cómo está la ${linea} a las 8hs").`;
+  }
+
+  if (pideConsejo) {
+    return `Para viajar más cómodo en el subte de Buenos Aires:\n\n` +
+      `✅ **Mejor opción:** antes de las 07:00hs o entre 10:00–16:00hs\n` +
+      `⚠️ **Horas pico:** 07:00–09:30hs y 17:00–20:00hs\n` +
+      `✅ **Noche tranquila:** después de las 21:00hs\n\n` +
+      `Usá el formulario del inicio para consultar línea, estación y horario específico, y te digo si conviene o si hay una mejor alternativa.`;
+  }
+
+  return `Puedo ayudarte con:\n` +
+    `• Ocupación de una línea en un horario: *"¿cómo está la B a las 8hs?"*\n` +
+    `• Comparativa entre líneas: *"¿qué líneas están libres a las 18hs?"*\n` +
+    `• Mejor horario para viajar: *"¿cuándo conviene tomar la D?"*\n` +
+    `• Eventos que afectan el servicio hoy\n\n` +
+    `¿Qué querés saber?`;
+}
+
+async function enviarMensaje() {
+  const input = document.getElementById('chat-input');
+  const btn   = document.getElementById('btn-send');
+  const msg   = input.value.trim();
+  if (!msg) return;
+
+  addMsg(msg, 'user');
+  input.value = '';
+  btn.disabled = true;
+
+  const typing = addMsg('Analizando tu consulta...', 'bot typing');
+
+  try {
+    const texto = await generarRespuesta(msg);
+    typing.remove();
+    addMsg(texto, 'bot');
+  } catch {
+    typing.remove();
+    addMsg('No pude procesar tu consulta. Intentá de nuevo.', 'bot');
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+function addMsg(text, cls) {
+  const box = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + cls;
+  div.innerHTML = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+function preguntarSugerencia(el) {
+  document.getElementById('chat-input').value = el.textContent;
+  enviarMensaje();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVEGACIÓN
+// ─────────────────────────────────────────────────────────────────────────────
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('nav button').forEach((b, i) => {
+    b.classList.toggle('active', ['inicio','mapa','asistente','empresa'][i] === name);
+  });
+  if (name === 'mapa') renderHeatmap();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INICIALIZACIÓN
+// ─────────────────────────────────────────────────────────────────────────────
+
+window.onload = () => {
+  updateEstaciones();
+  updateTimeOptions();
+
+  // Default: día actual
+  const diaActual = (new Date().getDay() + 6) % 7;
+  document.getElementById('sel-dia').value = Math.min(diaActual, 6);
+  updateTimeOptions();
+
+  // Default hora: actual o 08:00
+  const horaActual = `${String(new Date().getHours()).padStart(2,'0')}:00`;
+  const opts = [...document.getElementById('sel-hora').options].map(o => o.value);
+  if (opts.includes(horaActual)) document.getElementById('sel-hora').value = horaActual;
+
+  renderEventos();
+};
+</script>
+</body>
+</html>

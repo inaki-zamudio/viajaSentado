@@ -1,0 +1,104 @@
+Implementá el archivo app.py para un MVP de predicción de carga en el
+subte de Buenos Aires usando Streamlit.
+
+CONTEXTO DEL PROYECTO:
+El sistema predice cuántos pasajeros hay en un vagón en un momento dado,
+usando un modelo XGBoost entrenado con datos históricos de molinetes.
+El demo tiene dos features extra:
+1. Fixed-point iteration: el modelo itera sobre su propia predicción
+   hasta estabilizarse (para evitar el efecto observador).
+2. Ajuste por eventos: un agente de IA busca noticias del día y ajusta
+   la predicción si hay eventos que afecten el flujo (recitales, cortes, etc).
+
+ARCHIVOS DISPONIBLES EN EL MISMO DIRECTORIO:
+- predictor.py     (ver interfaces abajo)
+- news_agent.py    (ver interfaces abajo)
+- xgb_subte_load.json
+- model_meta.pkl
+- molinetes-2024/  (carpeta con CSVs históricos, mismo formato que el notebook)
+
+INTERFAZ DE predictor.py:
+
+  load_model(model_path, meta_path) -> (model, meta)
+    Carga el modelo XGBoost y la metadata.
+    meta es un dict con keys: features, best_k, station_sequences.
+
+  load_historical_data(data_path, meta) -> pd.DataFrame
+    Carga y procesa los CSVs de molinetes-2024/, devuelve un DataFrame
+    con columnas [TIMESTAMP, LINEA, ESTACION, boardings, load_est].
+    Usar @st.cache_data para no recargar en cada interacción.
+
+  predict(linea, estacion, timestamp, historical_sample,
+          event_store=None) -> dict
+    Función principal. Devuelve:
+    {
+      "base": float,           # predicción sin ajuste de evento
+      "adjusted": float,       # predicción final con factor aplicado
+      "iterations": list,      # valores de cada iteración del punto fijo
+      "event_applied": dict | None  # evento que se aplicó, o None
+    }
+
+INTERFAZ DE news_agent.py:
+
+  fetch_events() -> dict
+    Llama a la API de Claude con web search y devuelve:
+    {
+      "events": [
+        {
+          "descripcion": str,
+          "lineas_afectadas": list[str],
+          "estaciones_afectadas": list[str],
+          "ventana_inicio": str,   # "HH:MM"
+          "ventana_fin": str,      # "HH:MM"
+          "factor": float,
+          "tipo": str              # "aumento" o "disminucion"
+        },
+        ...
+      ]
+    }
+
+ESTRUCTURA DE LA UI:
+
+Sidebar:
+  - Selector de línea (LineaA, LineaB, LineaC, LineaD, LineaE, LineaH)
+  - Selector de estación (se actualiza según la línea elegida,
+    usar las listas de station_sequences del meta)
+  - Date picker (rango: 2024-01-01 a 2024-12-31)
+  - Time selector (slider de 0 a 23hs, paso 15 min)
+  - Botón "Predecir"
+  - Separador
+  - Botón "Actualizar noticias"
+
+Panel principal:
+  Sección 1 — Resultado de la predicción (aparece al presionar Predecir):
+    - Métrica grande: pasajeros estimados (valor "adjusted")
+    - Si hay evento activo: mostrar "adjusted" en grande con color
+      naranja/rojo, y debajo "base: X pax (sin evento)" en gris
+    - Si no hay evento: mostrar solo "adjusted" (= "base") en azul
+    - Gráfico de línea con la convergencia del punto fijo
+      (eje x: iteración, eje y: pasajeros). Título: "Convergencia del modelo"
+
+  Sección 2 — Eventos activos (aparece al presionar Actualizar noticias):
+    - Si no hay eventos: mensaje "No se encontraron eventos relevantes hoy."
+    - Si hay eventos: tabla o cards con descripción, líneas afectadas,
+      ventana horaria y factor para cada evento
+    - Timestamp de última actualización
+
+ESTADO DE LA SESIÓN (st.session_state):
+  - "events": lista de eventos devuelta por fetch_events(), inicialmente []
+  - "last_update": datetime de la última llamada a fetch_events(), o None
+  - "last_result": dict devuelto por predict(), o None
+
+INICIALIZACIÓN (se ejecuta una sola vez con st.cache_resource):
+  - Cargar modelo y meta con predictor.load_model()
+  - Cargar datos históricos con predictor.load_historical_data()
+
+MANEJO DE ERRORES:
+  - Si fetch_events() falla (ej. sin API key): mostrar st.warning con el
+    error, no romper la app.
+  - Si predict() falla: mostrar st.error con el mensaje.
+
+DEPENDENCIAS: streamlit, pandas, plotly (para el gráfico de convergencia).
+Usar plotly.graph_objects para el gráfico, no matplotlib.
+No agregar autenticación ni configuración de página compleja.
+Título de la página: "ViajaSentado — Predicción de carga en subte"

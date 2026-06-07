@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Datos crudos (descargar desde fuente — ver README)
+molinetes-2024/
+
+# Herramientas de desarrollo
+.claude/
+.atl/
+.streamlit/
+Guía DoraHacks.pdf

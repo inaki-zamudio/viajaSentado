@@ -1,0 +1,66 @@
+Implementá el archivo news_agent.py para un MVP de predicción de carga
+en el subte de Buenos Aires.
+
+FUNCIÓN A IMPLEMENTAR:
+  fetch_events() -> dict
+
+La función debe:
+1. Llamar a la API de Anthropic (modelo claude-sonnet-4-6) con la
+   herramienta de web search habilitada.
+2. Pedirle al modelo que busque noticias del día en Buenos Aires que
+   puedan afectar el flujo de pasajeros en el subte: recitales,
+   partidos de fútbol, marchas, accidentes, cortes de servicio, eventos
+   masivos, etc.
+3. Extraer de la respuesta un JSON estructurado con los eventos
+   encontrados y devolverlo como dict de Python.
+
+FORMATO DE SALIDA:
+La función debe devolver un dict con esta estructura:
+{
+  "events": [
+    {
+      "descripcion": "Recital de Coldplay en el Estadio Monumental",
+      "lineas_afectadas": ["LineaD"],
+      "estaciones_afectadas": ["Congreso de Tucuman", "Juramento"],
+      "ventana_inicio": "20:00",
+      "ventana_fin": "23:30",
+      "factor": 1.8,
+      "tipo": "aumento"
+    },
+    ...
+  ]
+}
+
+Si no hay eventos relevantes, devolver {"events": []}.
+
+SOBRE EL FACTOR:
+El campo "factor" es un multiplicador sobre la predicción base del modelo.
+Pedirle al LLM que lo estime con estas referencias:
+- Evento masivo con salida concentrada (recital, partido): 1.5 - 2.5
+- Evento mediano (marcha, feria): 1.2 - 1.5
+- Corte parcial de servicio: 0.4 - 0.7
+- Corte total de línea: 0.1 - 0.2
+
+ESTACIONES DISPONIBLES POR LÍNEA (para que el LLM mapee correctamente):
+LineaA: Plaza de Mayo, Peru, Piedras, Lima, Saenz Peña, Congreso, Pasco,
+  Alberti, Plaza Miserere, Loria, Castro Barros, Rio de Janeiro, Acoyte,
+  Primera Junta, Puan, Carabobo, Flores, San Pedrito
+LineaB: Leandro N. Alem, Florida, Carlos Pellegrini, Uruguay, Callao.B,
+  Pasteur, Pueyrredon, Carlos Gardel, Medrano, Angel Gallardo, Malabia,
+  Dorrego, Federico Lacroze, Tronador, Los Incas, Echeverria, Rosas
+LineaC: Constitucion, San Juan, Independencia, Mariano Moreno,
+  Avenida de Mayo, Diagonal Norte, Lavalle, General San Martin, Retiro
+LineaD: Catedral, 9 de julio, Tribunales, Callao, Facultad de Medicina,
+  Pueyrredon.D, Agüero, Bulnes, Scalabrini Ortiz, Plaza Italia, Palermo,
+  Ministro Carranza, Olleros, Jose Hernandez, Juramento, Congreso de Tucuman
+LineaE: Pza. de los Virreyes, Varela, Medalla Milagrosa, Emilio Mitre,
+  Jose Maria Moreno, Avenida La Plata, Boedo, Urquiza, Jujuy, Pichincha,
+  Entre Rios, San Jose, Independencia.H, General Belgrano, Bolivar,
+  Correo Central, Catalinas, Retiro E
+LineaH: Hospitales, Patricios, Caseros, Inclan, Humberto I, Venezuela,
+  Once, Corrientes, Cordoba, Santa Fe, Las Heras, Facultad de Derecho
+
+DEPENDENCIAS DISPONIBLES: anthropic (pip install anthropic)
+No usar LangChain ni ningún otro framework de agentes.
+El archivo debe ser autocontenido. La API key se lee de la variable
+de entorno ANTHROPIC_API_KEY.

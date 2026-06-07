@@ -1,0 +1,86 @@
+Implementá el archivo predictor.py para un MVP de predicción de carga
+en el subte de Buenos Aires.
+
+CONTEXTO DEL MODELO:
+Se tiene un modelo XGBoost entrenado para predecir load_est: la cantidad
+estimada de pasajeros en un vagón al pasar por una estación dada.
+El modelo fue entrenado con datos de molinetes (entradas por estación en
+ventanas de 15 minutos). No hay datos de salidas; el load se estimó como
+una suma rodante de boardings en las k estaciones anteriores de la misma
+línea (k varía por línea, está en la metadata).
+
+ARCHIVOS DISPONIBLES EN EL MISMO DIRECTORIO:
+- xgb_subte_load.json  (modelo XGBoost en formato nativo)
+- model_meta.pkl       (dict con keys: features, best_k,
+                        station_sequences, target)
+
+FEATURES DEL MODELO (orden exacto, crítico):
+['hour', 'minute', 'dayofweek', 'month', 'is_weekend', 'time_bin',
+ 'station_pos', 'station_norm', 'boardings',
+ 'b_lag_1', 'b_lag_2', 'b_lag_4', 'b_lag_8', 'b_lag_96',
+ 'load_lag_1', 'load_lag_2', 'load_lag_4', 'load_lag_8', 'load_lag_96',
+ 'b_roll_4', 'b_roll_8', 'b_roll_96',
+ 'b_prev_1st', 'b_prev_2nd', 'b_next_1st',
+ 'linea_enc', 'estacion_enc']
+
+Donde:
+- b_lag_N    : boardings en la misma estación N intervalos de 15min atrás
+- load_lag_N : load_est en la misma estación N intervalos de 15min atrás
+- b_roll_N   : media móvil de boardings de los últimos N intervalos
+- b_prev_1st : boardings de la estación anterior en la línea, mismo timestamp
+- b_prev_2nd : boardings de la estación dos posiciones antes, mismo timestamp
+- b_next_1st : boardings de la estación siguiente en la línea, mismo timestamp
+- station_pos : índice de la estación en la secuencia de su línea (0-based)
+- station_norm: station_pos / n_stations
+- time_bin   : hour * 4 + minute // 15  (0-95)
+- linea_enc  : ordinal encoding de LINEA, orden alfabético
+- estacion_enc: ordinal encoding de ESTACION, orden alfabético
+
+ESTRATEGIA PARA FEATURES DE LAG (problema central):
+El modelo fue entrenado con datos históricos reales. Para el demo,
+no hay feed en tiempo real. Usar este approach:
+1. Recibir como parámetro un DataFrame `historical_sample` con columnas
+   [TIMESTAMP, LINEA, ESTACION, boardings, load_est] que contiene datos
+   históricos recientes de la línea/estación pedida.
+2. Desde ese DataFrame, extraer los valores de lag alineando por timestamp.
+3. Para features de lag que no tengan dato histórico disponible, imputar
+   con la mediana de la estación en el mismo time_bin y dayofweek.
+4. Para b_prev_1st, b_prev_2nd, b_next_1st: buscar en historical_sample
+   las estaciones vecinas según station_sequences en el mismo timestamp.
+
+FUNCIONES A IMPLEMENTAR:
+
+  load_model(model_path, meta_path) -> (model, meta)
+    Carga el XGBRegressor y el dict de metadata.
+
+  build_features(linea, estacion, timestamp, historical_sample) -> pd.DataFrame
+    Construye el vector de features de una fila para el modelo.
+    Devuelve un DataFrame de 1 fila con las columnas en el orden exacto
+    de FEATURES.
+
+  fixed_point_predict(model, features_row, max_iter=10, tol=0.5) -> (float, list)
+    Itera el modelo sobre sí mismo actualizando load_lag_1 con la
+    predicción anterior hasta convergencia.
+    Devuelve (predicción_final, lista_de_iteraciones) para poder mostrar
+    la convergencia en la UI.
+
+  predict(linea, estacion, timestamp, historical_sample,
+          event_store=None) -> dict
+    Función principal. Llama a build_features, fixed_point_predict,
+    y aplica el factor del event_store si hay un evento activo para
+    esa (linea, estacion, timestamp).
+    Devuelve:
+    {
+      "base": float,          # predicción sin ajuste
+      "adjusted": float,      # predicción con factor de evento
+      "iterations": list,     # valores por iteración del punto fijo
+      "event_applied": dict | None  # evento que se aplicó, o None
+    }
+
+event_store es el dict que devuelve news_agent.fetch_events()["events"]
+ya procesado como lista. Para matchear un evento, verificar si la
+estación está en estaciones_afectadas y si el timestamp cae dentro
+de la ventana horaria del evento.
+
+DEPENDENCIAS: xgboost, pandas, numpy, pickle.
+No usar scikit-learn en este archivo.
