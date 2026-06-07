@@ -231,15 +231,11 @@ if st.session_state["last_result"] is not None:
 
     st.markdown(f"#### {linea} · {estacion}")
     st.markdown(f"# {occ_text}")
-    st.caption(f"~{adjusted:.0f} pasajeros estimados")
     st.caption(f"Confiabilidad: **{conf_text}**")
 
     if event is not None:
         delta_pct = (adjusted - base) / max(base, 1) * 100
-        st.caption(
-            f"Sin evento: ~{base:.0f} pax  ·  "
-            f"Ajuste: {delta_pct:+.1f}% por evento"
-        )
+        st.caption(f"Ajuste por evento: {delta_pct:+.1f}%")
         with st.container(border=True):
             tipo_icon = "📈" if event["tipo"] == "aumento" else "📉"
             st.markdown(f"**{tipo_icon} Evento aplicado**")
@@ -256,7 +252,7 @@ if st.session_state["last_result"] is not None:
         hora_mejor = ts_better.strftime("%H:%M")
         st.info(
             f"💡 **Si salís {off_min} minutos {direction}** ({hora_mejor}) "
-            f"vas a viajar mejor: {occ_better} (~{load_better:.0f} pasajeros)"
+            f"vas a viajar mejor: {occ_better}"
         )
 else:
     st.info("Seleccioná los parámetros y presioná **Predecir** para ver el resultado.")
