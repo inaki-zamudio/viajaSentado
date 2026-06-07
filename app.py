@@ -86,16 +86,18 @@ def confidence_label(iterations: list, event_applied: dict | None) -> str:
 
 
 SUGGEST_IMPROVEMENT = 0.25  # mejora mínima requerida (proporción de la carga actual)
+_OCC_RANK = {"🟢 Tranquilo": 0, "🟡 Normal": 1, "🟠 Ocupado": 2, "🔴 Saturado": 3}
 
 
 def find_better_time(linea, estacion, base_ts, historical_sample, event_store, current_load):
     """
     Busca el slot más cercano en ±30 min donde la carga sea al menos
-    SUGGEST_IMPROVEMENT menor que current_load (umbral proporcional, no fijo).
+    SUGGEST_IMPROVEMENT menor Y en una categoría de ocupación mejor.
     Devuelve (offset_minutos, "antes"|"después", timestamp, carga_estimada) o None.
     """
-    target = current_load * (1 - SUGGEST_IMPROVEMENT)
-    candidates = []
+    target       = current_load * (1 - SUGGEST_IMPROVEMENT)
+    current_rank = _OCC_RANK.get(occupancy_label(current_load)[0], 3)
+    candidates   = []
     for sign, direction in [(-1, "antes"), (1, "después")]:
         for off in range(15, 31, 15):
             ts_c  = base_ts + datetime.timedelta(minutes=sign * off)
@@ -104,11 +106,13 @@ def find_better_time(linea, estacion, base_ts, historical_sample, event_store, c
             if not (_OPENING[dow] <= t_str <= _CLOSING.get(linea, {}).get(dow, "23:00")):
                 continue
             try:
-                r = predictor.predict(
+                r            = predictor.predict(
                     linea=linea, estacion=estacion, timestamp=ts_c,
                     historical_sample=historical_sample, event_store=event_store,
                 )
-                if r["adjusted"] < target:
+                occ_c, _     = occupancy_label(r["adjusted"])
+                better_cat   = _OCC_RANK.get(occ_c, 3) < current_rank
+                if r["adjusted"] < target and better_cat:
                     candidates.append((off, direction, ts_c, r["adjusted"]))
                     break
             except Exception:
