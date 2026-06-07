@@ -73,16 +73,6 @@ def occupancy_label(pax: float) -> tuple[str, str]:
         return "🔴 Saturado", "red"
 
 
-def confidence_label(iterations: list, event_applied: dict | None) -> str:
-    n = len(iterations)
-    if n <= 2:
-        level = "Alta" if not event_applied else "Media"
-    elif n <= 5:
-        level = "Media" if not event_applied else "Baja"
-    else:
-        level = "Baja"
-    icons = {"Alta": "✅", "Media": "⚠️", "Baja": "❌"}
-    return f"{icons[level]} {level}"
 
 
 SUGGEST_IMPROVEMENT = 0.25  # mejora mínima requerida (proporción de la carga actual)
@@ -236,15 +226,12 @@ if st.session_state["last_result"] is not None:
     res      = st.session_state["last_result"]
     base     = res["base"]
     adjusted = res["adjusted"]
-    iters    = res["iterations"]
     event    = res["event_applied"]
 
     occ_text, _ = occupancy_label(adjusted)
-    conf_text   = confidence_label(iters, event)
 
     st.markdown(f"#### {linea} · {estacion}")
     st.markdown(f"# {occ_text}")
-    st.caption(f"Confiabilidad: **{conf_text}**")
 
     if event is not None:
         delta_pct = (adjusted - base) / max(base, 1) * 100
