@@ -34,7 +34,7 @@ with col_title:
 
 st.markdown(
     "Elegí una línea, estación y horario para saber si el tren va a ir lleno. "
-    "Si la ocupación es alta, te sugerimos cuándo salir para viajar más cómodo."
+    "Si hay un momento cercano con menos gente, te lo decimos."
 )
 st.caption("Entrenado con datos de molinetes SBASE 2024 · Modelo XGBoost · Sin feed en tiempo real")
 
